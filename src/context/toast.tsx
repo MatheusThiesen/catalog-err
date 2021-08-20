@@ -9,6 +9,7 @@ export interface ToastMessage {
   type: 'success' | 'error' | 'info'
   title: string
   description: string
+  notTimer?: boolean
 }
 
 interface ToastShow {

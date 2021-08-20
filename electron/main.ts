@@ -4,11 +4,15 @@ import {
   nativeImage,
   Menu,
   shell,
-  MenuItemConstructorOptions
+  MenuItemConstructorOptions,
+  ipcMain,
+  dialog
 } from 'electron'
 import { autoUpdater } from 'electron-updater'
+import * as fs from 'fs'
 import * as path from 'path'
 import * as url from 'url'
+import { writeFile } from './ipc/genarateCaralog'
 
 import i18n from '../i18n'
 import {
@@ -16,7 +20,7 @@ import {
   setWindowBounds
 } from '../src/utils/windowBoundsController'
 
-let mainWindow: Electron.BrowserWindow | null
+export let mainWindow: Electron.BrowserWindow | null
 
 function createWindow() {
   const icon = nativeImage.createFromPath(`${app.getAppPath()}/build/icon.png`)
@@ -28,10 +32,12 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     ...getWindowBounds(),
     icon,
-    minWidth: 1000,
-    minHeight: 600,
-    frame: false,
-    transparent: true,
+    minWidth: 800,
+    minHeight: 500,
+    width: 800,
+    height: 500,
+    // frame: false,
+    // transparent: true,
     webPreferences: {
       nodeIntegration: true,
       enableRemoteModule: true
@@ -114,7 +120,59 @@ async function createMenu() {
   Menu.setApplicationMenu(menu)
 }
 
+async function registerListeners() {
+  /**
+   * This comes from bridge integration, check bridge.ts
+   */
+  ipcMain.on('message', (event, message) => {
+    setTimeout(() => {
+      console.log('heyyyy', message)
+
+      event.reply('message-reply', 'pong')
+    }, 2000)
+  })
+
+  ipcMain.on('select-dir', async event => {
+    const result = await dialog.showOpenDialog(
+      mainWindow as Electron.BrowserWindow,
+      {
+        properties: ['openDirectory']
+      }
+    )
+
+    event.reply('selected-dir', result.filePaths[0])
+  })
+
+  ipcMain.on('download-default-file', async (_event, file) => {
+    const result = dialog.showSaveDialogSync(
+      mainWindow as Electron.BrowserWindow,
+      {}
+    )
+
+    if (result !== undefined) {
+      fs.copyFile(
+        path.resolve(__dirname, '..', 'import', file),
+        result + '.xlsx',
+        err => {
+          if (err) throw err
+        }
+      )
+
+      setTimeout(() => {
+        shell.openPath(result + '.xlsx')
+      }, 300)
+    }
+  })
+
+  ipcMain.on('generate-catalog', (_, props) => {
+    writeFile(props)
+      .then(() => console.log('Gerado'))
+      .catch(e => console.log(e))
+  })
+}
+
 app.on('ready', () => {
+  registerListeners()
   createWindow()
   autoUpdater.checkForUpdatesAndNotify()
   createMenu()

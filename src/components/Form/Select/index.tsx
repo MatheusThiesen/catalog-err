@@ -12,21 +12,22 @@ import { useField } from '@unform/core'
 
 import { Container, TitleContainer, InputContainer } from './styles'
 
-interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
+interface InputProps extends InputHTMLAttributes<HTMLSelectElement> {
   name: string
   label?: string
   hint?: string
   notView?: boolean
 }
 
-const Input: React.FC<InputProps> = ({
+const Select: React.FC<InputProps> = ({
   label,
   name,
   hint,
   notView,
+  children,
   ...rest
 }) => {
-  const inputRef = useRef<HTMLInputElement>(null)
+  const inputRef = useRef<HTMLSelectElement>(null)
   const {
     fieldName,
     registerField,
@@ -58,9 +59,7 @@ const Input: React.FC<InputProps> = ({
   }, [])
 
   return (
-    <Container
-      style={notView ? { position: 'absolute', opacity: 0 } : undefined}
-    >
+    <Container style={{ display: notView ? 'none' : undefined }}>
       <TitleContainer>
         {label && <label htmlFor={fieldName}>{label}</label>}
         {hint && <small>{hint}</small>}
@@ -71,12 +70,14 @@ const Input: React.FC<InputProps> = ({
         isErrored={!!error}
         onFocus={handleInputFocus}
       >
-        <input
+        <select
           ref={inputRef}
           defaultValue={defaultValue}
           {...rest}
           onBlur={handleInputBlur}
-        />
+        >
+          {children}
+        </select>
 
         {!!error && <FiAlertCircle />}
       </InputContainer>
@@ -84,4 +85,4 @@ const Input: React.FC<InputProps> = ({
   )
 }
 
-export default memo(Input)
+export default memo(Select)

@@ -7,6 +7,7 @@ import { Container } from './styles'
 interface ToastProps {
   toast: ToastMessage
   style: CSSProperties
+  notTimer?: boolean
 }
 
 const icons = {
@@ -15,7 +16,7 @@ const icons = {
   error: <FiAlertCircle size={24} />
 }
 
-const Toast: React.FC<ToastProps> = ({ toast, style }) => {
+const Toast: React.FC<ToastProps> = ({ toast, style, notTimer }) => {
   const { removeToast } = useToast()
 
   const closeToast = useCallback(() => removeToast(toast.id), [
@@ -24,12 +25,14 @@ const Toast: React.FC<ToastProps> = ({ toast, style }) => {
   ])
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      closeToast()
-    }, 4000)
+    if (notTimer !== true) {
+      const timer = setTimeout(() => {
+        closeToast()
+      }, 4000)
 
-    return (): void => {
-      clearTimeout(timer)
+      return (): void => {
+        clearTimeout(timer)
+      }
     }
   }, [closeToast])
 

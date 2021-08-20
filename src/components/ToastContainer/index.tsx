@@ -31,7 +31,7 @@ const ToastContainer: React.FC<ToastContainerProps> = ({ toasts }) => {
   return createPortal(
     <Container>
       {transitions.map(({ item, key, props }) => (
-        <Toast key={key} style={props} toast={item} />
+        <Toast key={key} style={props} toast={item} notTimer={item.notTimer} />
       ))}
     </Container>,
     document.body

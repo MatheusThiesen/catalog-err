@@ -15,7 +15,7 @@ export const Container = styled.div`
     margin: 0;
   }
 
-  input {
+  select {
     width: 100%;
     border: 0;
     font-size: 16px;
